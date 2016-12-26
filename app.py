@@ -1,19 +1,22 @@
 #!flask/bin/python
 from functools import wraps
-from flask import Flask, request, Response
+from flask import Flask, request, Response, config
 from phue import Bridge
 from pprint import pprint
 import json
+import yaml
 
 app = Flask(__name__)
-bridge = Bridge ("10.20.100.186")
+app.config.from_envvar('APP_CONFIG_FILE')
+
+bridge = Bridge (app.config["BRIDGE_IP"])
 bridge.connect()
 
 def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'admin' and password == 'secret'
+    return username == app.config["USERNAME"] and password == app.config["PASSWORD"]
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
@@ -45,4 +48,4 @@ def run_scene():
    return "DONE"
 
 if __name__ == '__main__':
-   app.run(debug=True)
+   app.run(host='0.0.0.0', debug=False)
